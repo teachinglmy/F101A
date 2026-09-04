@@ -515,39 +515,46 @@
         document.getElementById('final-streak').innerText = maxStreak;
     }
 
-    function submitScore(e) {
-        e.preventDefault();
-        const className = document.getElementById('class-name').value.trim();
-        const studentName = document.getElementById('student-name').value.trim();
+function submitScore(e) {
+    e.preventDefault();
+    const className = document.getElementById('class-name').value.trim();
+    const studentName = document.getElementById('student-name').value.trim();
 
-        if (!className || !studentName) return;
+    if (!className || !studentName) return;
 
-        document.getElementById('end-screen').classList.add('hidden');
-        document.getElementById('leaderboard-screen').classList.remove('hidden');
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('leaderboard-screen').classList.remove('hidden');
 
-        if (GAS_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
-            document.getElementById('leaderboard-status').innerText = "（目前為測試模式，顯示範例數據）";
-            showMockLeaderboard(className, studentName, score, maxStreak);
-            return;
-        }
-
-        // 傳送成績至 Google Apps Script
-        fetch(GAS_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                className: className,
-                name: studentName,
-                score: score,
-                streak: maxStreak
-            })
-        })
-        .then(() => loadLeaderboard())
-        .catch(() => {
-            document.getElementById('leaderboard-status').innerText = "無法發送成績，請檢查網絡。";
-        });
+    // 未填寫 GAS 網址時的本地測試模式
+    if (GAS_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+        document.getElementById('leaderboard-status').innerText = "（目前為測試模式，顯示範例數據）";
+        showMockLeaderboard(className, studentName, score, maxStreak);
+        return;
     }
+
+    document.getElementById('leaderboard-status').innerText = "正在記錄成績，大腦又變聰明囉...";
+
+    // 正確的跨網域發送寫法
+    fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 關鍵：避免 triggering CORS preflight 攔截
+        body: JSON.stringify({
+            className: className,
+            studentName: studentName,
+            score: score,
+            maxStreak: maxStreak
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        loadLeaderboard(); // 寫入成功後重新讀取龍虎榜
+    })
+    .catch(err => {
+        console.error("寫入失敗:", err);
+        // 若網絡稍有延遲，依然嘗試載入最新排行榜
+        loadLeaderboard();
+    });
+}
 
     function loadLeaderboard() {
         document.getElementById('leaderboard-status').innerText = "正在讀取頭十名龍虎榜...";
