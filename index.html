@@ -52,13 +52,12 @@
             border-radius: 12px;
         }
 
-        /* 十格框容器：防止觸控滑動時頁面跟著滾動 */
         .frames-wrapper {
             display: flex;
             flex-direction: column;
             gap: 15px;
             align-items: center;
-            margin: 20px 0;
+            margin: 15px 0;
             touch-action: none;
             user-select: none;
         }
@@ -91,29 +90,51 @@
             width: 80%;
             height: 80%;
             border-radius: 50%;
-            pointer-events: none; /* 避免擋住觸控判定 */
+            pointer-events: none;
             transition: transform 0.1s ease;
         }
 
         .dot.purple { background-color: var(--dot-color-1); }
         .dot.green { background-color: var(--dot-color-2); }
 
-        .input-area {
-            margin: 15px 0;
-            font-size: 1.2rem;
+        /* 網頁自訂數字鍵盤樣式 */
+        .keypad-display-box {
+            font-size: 1.4rem;
             font-weight: bold;
+            margin-bottom: 10px;
+            background: #F4F6F7;
+            padding: 8px;
+            border-radius: 10px;
+            border: 2px solid #BDC3C7;
         }
 
-        /* 原生數字鍵盤彈出優化 */
-        input[type="number"] {
-            width: 90px;
-            font-size: 1.6rem;
-            text-align: center;
-            padding: 6px;
-            border: 2px solid var(--primary-color);
-            border-radius: 10px;
-            outline: none;
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 280px;
+            margin: 0 auto 10px auto;
         }
+
+        .num-btn {
+            background-color: #3498DB;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            padding: 12px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 0 #2980B9;
+            cursor: pointer;
+        }
+
+        .num-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .num-btn.clear { background-color: #E74C3C; box-shadow: 0 4px 0 #C0392B; }
+        .num-btn.submit { background-color: var(--success-color); box-shadow: 0 4px 0 #27AE60; }
 
         .btn {
             background-color: var(--secondary-color);
@@ -132,9 +153,8 @@
             box-shadow: none;
         }
 
-        /* 成長型思維回饋區 */
         .feedback {
-            min-height: 60px;
+            min-height: 55px;
             margin: 10px 0;
             font-size: 1.05rem;
             font-weight: bold;
@@ -148,9 +168,7 @@
             justify-content: center;
         }
 
-        .feedback.empty {
-            background-color: transparent;
-        }
+        .feedback.empty { background-color: transparent; }
 
         table {
             width: 100%;
@@ -164,16 +182,9 @@
             text-align: center;
         }
 
-        th {
-            background-color: var(--primary-color);
-            color: white;
-        }
+        th { background-color: var(--primary-color); color: white; }
 
-        .form-group {
-            margin: 10px 0;
-            text-align: left;
-        }
-
+        .form-group { margin: 10px 0; text-align: left; }
         .form-group input {
             width: 100%;
             padding: 10px;
@@ -182,7 +193,7 @@
             font-size: 1rem;
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -191,14 +202,14 @@
     <!-- 1. 開始畫面 -->
     <div id="start-screen">
         <h1>認識 1 - 20<br>十格框大挑戰 🎯</h1>
-        <p style="color: #555; line-height: 1.5;">用手指劃一劃、數一數！<br>挑戰 60 秒能得幾分？</p>
+        <p style="color: #555; line-height: 1.5;">手指滑一滑，大腦變聰明！<br>挑戰 40 秒能獲得多少分？</p>
         <button class="btn" onclick="startGame()">開始挑戰</button>
     </div>
 
     <!-- 2. 遊戲進行畫面 -->
     <div id="game-screen" class="hidden">
         <div class="header">
-            <span>⏳ 時間: <span id="timer">60</span>s</span>
+            <span>⏳ 時間: <span id="timer">40</span>s</span>
             <span>🔥 連對: <span id="streak">0</span></span>
             <span>⭐ 分數: <span id="score">0</span></span>
         </div>
@@ -214,7 +225,7 @@
 
     <!-- 3. 結算畫面 -->
     <div id="end-screen" class="hidden">
-        <h2>時間到！你真棒！🌟</h2>
+        <h2>時間到！挑戰成功！🌟</h2>
         <p>最終得分：<span id="final-score" style="font-size: 1.6rem; color: var(--secondary-color); font-weight: bold;">0</span> 分</p>
         <p>最高連續答對：<span id="final-streak" style="font-weight: bold; color: var(--success-color);">0</span> 題</p>
         
@@ -231,10 +242,10 @@
         </form>
     </div>
 
-    <!-- 4. 龍虎榜畫面 (同頁包含重新開始按鈕) -->
+    <!-- 4. 龍虎榜畫面 -->
     <div id="leaderboard-screen" class="hidden">
         <h2>🏆 龍虎榜 (頭十名)</h2>
-        <div id="leaderboard-status">載入中...</div>
+        <div id="leaderboard-status">正在讀取最高紀錄...</div>
         <table id="leaderboard-table" class="hidden">
             <thead>
                 <tr>
@@ -248,24 +259,24 @@
             <tbody id="leaderboard-body"></tbody>
         </table>
         <br>
-        <button class="btn" onclick="restartGame()">重新開始</button>
+        <!-- 重新開始按鈕：初始隱藏，龍虎榜載入完成後才顯示 -->
+        <button id="restart-btn" class="btn hidden" onclick="restartGame()">重新開始</button>
     </div>
 </div>
 
 <script>
-    // 請替換為您的 Google Apps Script Web App URL
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzHpZVe5k3PrTSq4VELWVDQyoY6xbTgE74YTmzBGuSqdrLzYOk_PwhWj70p0y043srQFQ/exec";
 
     let score = 0;
     let streak = 0;
     let maxStreak = 0;
-    let timeLeft = 60;
+    let timeLeft = 40;
     let timerInterval = null;
     let currentTarget = 0;
     let currentType = 1;
     let userDots = 0;
+    let keypadInputValue = "";
 
-    // 滑動塗色監聽器控制變數 (防止重複綁定 Bug)
     let isSwipeInitialized = false;
     let isDragging = false;
     let dragAction = 'add'; 
@@ -274,7 +285,7 @@
         score = 0;
         streak = 0;
         maxStreak = 0;
-        timeLeft = 60;
+        timeLeft = 40;
         document.getElementById('score').innerText = score;
         document.getElementById('streak').innerText = streak;
         document.getElementById('timer').innerText = timeLeft;
@@ -282,11 +293,10 @@
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('leaderboard-screen').classList.add('hidden');
+        document.getElementById('restart-btn').classList.add('hidden'); // 重置按鈕隱藏
         document.getElementById('game-screen').classList.remove('hidden');
 
-        // 初始化劃過塗色手勢 (全局僅綁定一次)
         setupSwipeInteraction();
-
         nextQuestion();
 
         timerInterval = setInterval(() => {
@@ -297,11 +307,12 @@
     }
 
     function generateTarget() {
-        return Math.floor(Math.random() * 20) + 1; // 1-20
+        return Math.floor(Math.random() * 20) + 1;
     }
 
     function nextQuestion() {
-        setFeedback(''); // 清空提示
+        setFeedback('');
+        keypadInputValue = "";
         currentTarget = generateTarget();
         currentType = Math.random() < 0.5 ? 1 : 2;
 
@@ -311,34 +322,50 @@
         interactive.innerHTML = '';
 
         if (currentType === 1) {
-            // 題型一：展示圓點，輸入數字
             document.getElementById('question-text').innerText = "上圖共有圓點幾粒？";
             const frameCount = currentTarget > 10 ? 2 : 1;
             renderFrames(container, frameCount, currentTarget, false);
 
+            // 題型一：直接嵌入網頁數字鍵盤，無需點擊輸入框
             interactive.innerHTML = `
-                <div class="input-area">
-                    共有 <input type="number" id="answer-input" inputmode="numeric" pattern="[0-9]*" min="1" max="20" autofocus> 粒
+                <div class="keypad-display-box">答案：<span id="keypad-display" style="color:var(--primary-color);">?</span> 粒</div>
+                <div class="keypad-grid">
+                    <button class="num-btn" onclick="pressKey('1')">1</button>
+                    <button class="num-btn" onclick="pressKey('2')">2</button>
+                    <button class="num-btn" onclick="pressKey('3')">3</button>
+                    <button class="num-btn" onclick="pressKey('4')">4</button>
+                    <button class="num-btn" onclick="pressKey('5')">5</button>
+                    <button class="num-btn" onclick="pressKey('6')">6</button>
+                    <button class="num-btn" onclick="pressKey('7')">7</button>
+                    <button class="num-btn" onclick="pressKey('8')">8</button>
+                    <button class="num-btn" onclick="pressKey('9')">9</button>
+                    <button class="num-btn clear" onclick="pressKey('clear')">⌫</button>
+                    <button class="num-btn" onclick="pressKey('0')">0</button>
+                    <button class="num-btn submit" onclick="checkType1Answer()">✓</button>
                 </div>
-                <button class="btn" onclick="checkType1Answer()">提交</button>
             `;
-            
-            setTimeout(() => {
-                const input = document.getElementById('answer-input');
-                if (input) input.focus();
-            }, 100);
-
-            document.getElementById('answer-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') checkType1Answer();
-            });
         } else {
-            // 題型二：展示數字，劃過十格框放置圓點
             const frameCount = currentTarget > 10 ? 2 : 1;
             document.getElementById('question-text').innerHTML = `請在十格框劃過或點擊，放上 <span style="color:var(--secondary-color); font-size:1.5rem;">${currentTarget}</span> 個圓點：`;
             userDots = 0;
             renderFrames(container, frameCount, 0, true);
 
-            interactive.innerHTML = `<button class="btn" onclick="checkType2Answer()">提交</button>`;
+            interactive.innerHTML = `<button class="btn" onclick="checkType2Answer()">提交答案</button>`;
+        }
+    }
+
+    /* 網頁數字鍵盤按鈕觸發邏輯 */
+    function pressKey(key) {
+        if (key === 'clear') {
+            keypadInputValue = "";
+        } else {
+            if (keypadInputValue.length < 2) { // 答案最高 20，最多兩位數
+                keypadInputValue += key;
+            }
+        }
+        const display = document.getElementById('keypad-display');
+        if (display) {
+            display.innerText = keypadInputValue === "" ? "?" : keypadInputValue;
         }
     }
 
@@ -355,7 +382,6 @@
 
                 if (!isInteractive && remainingDots > 0) {
                     const dot = document.createElement('div');
-                    // 1-5個為紫色，6-20個為綠色
                     const colorClass = filledDots <= 5 ? 'purple' : 'green';
                     dot.className = `dot ${colorClass}`;
                     cell.appendChild(dot);
@@ -367,9 +393,8 @@
         }
     }
 
-    /* 劃過塗色 (Swipe Drag) 核心控制：全局一次性綁定機制 */
     function setupSwipeInteraction() {
-        if (isSwipeInitialized) return; // 避免重複綁定監聽器
+        if (isSwipeInitialized) return;
         isSwipeInitialized = true;
 
         const container = document.getElementById('frames-container');
@@ -389,7 +414,7 @@
 
         const handleMove = (e) => {
             if (!isDragging || currentType !== 2) return;
-            if (e.cancelable) e.preventDefault(); // 防止滑動時拖動整個網頁
+            if (e.cancelable) e.preventDefault();
 
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -400,11 +425,8 @@
             }
         };
 
-        const handleEnd = () => {
-            isDragging = false;
-        };
+        const handleEnd = () => { isDragging = false; };
 
-        // 事件監聽掛載
         container.addEventListener('mousedown', handleStart);
         container.addEventListener('mousemove', handleMove);
         container.addEventListener('touchstart', handleStart, { passive: false });
@@ -437,9 +459,7 @@
     }
 
     function checkType1Answer() {
-        const input = document.getElementById('answer-input');
-        const ans = parseInt(input.value, 10);
-
+        const ans = parseInt(keypadInputValue, 10);
         if (ans === currentTarget) {
             handleCorrect();
         } else {
@@ -466,7 +486,7 @@
     }
 
     function handleWrong(msg) {
-        streak = 0; // 答錯重置連續答對數，但不扣總分
+        streak = 0;
         document.getElementById('streak').innerText = streak;
         setFeedback(msg);
     }
@@ -482,23 +502,21 @@
         }
     }
 
-    /* 成長型思維 + 數學概念階梯提示 */
     function explainType1Error(userAns, correctAns) {
-        if (isNaN(userAns)) return "再嘗試，加油！請先輸入答案喔！";
-        
+        if (isNaN(userAns)) return "再嘗試，加油！請按數字鍵盤輸入答案喔！";
         let hint = "再嘗試，加油！";
         if (correctAns > 10) {
-            hint += `<br>💡 <b>概念提示：</b>第一個十格框滿格是 <b>10</b>，第二個框有 <b>${correctAns - 10}</b> 個，合起來是 <b>${correctAns}</b>！`;
+            hint += `<br>💡 <b>思考小幫手：</b>滿格十格框是 <b>10</b>，另一個框有 <b>${correctAns - 10}</b> 個，合起來是 <b>${correctAns}</b>！`;
         } else if (correctAns > 5) {
-            hint += `<br>💡 <b>概念提示：</b>第一排滿格是 <b>5</b>，接著往後數數看！`;
+            hint += `<br>💡 <b>思考小幫手：</b>第一排有 <b>5</b> 個，接著往後數數看！`;
         } else {
-            hint += `<br>💡 <b>概念提示：</b>大腦正在思考變聰明！用手指一個一個數數看！`;
+            hint += `<br>💡 <b>思考小幫手：</b>大腦正在思考變聰明！用手指一個一個數數看！`;
         }
         return hint;
     }
 
     function explainType2Error(current, target) {
-        let hint = `再嘗試，加油！你現在擺了 <b>${current}</b> 個圓點。<br>`;
+        let hint = `再嘗試，加油！你現在放了 <b>${current}</b> 個圓點。<br>`;
         if (current < target) {
             hint += `💡 還少 <b>${target - current}</b> 個圓點，手指再劃過幾格補齊吧！`;
         } else {
@@ -515,54 +533,48 @@
         document.getElementById('final-streak').innerText = maxStreak;
     }
 
-function submitScore(e) {
-    e.preventDefault();
-    const className = document.getElementById('class-name').value.trim();
-    const studentName = document.getElementById('student-name').value.trim();
+    function submitScore(e) {
+        e.preventDefault();
+        const className = document.getElementById('class-name').value.trim();
+        const studentName = document.getElementById('student-name').value.trim();
 
-    if (!className || !studentName) return;
+        if (!className || !studentName) return;
 
-    document.getElementById('end-screen').classList.add('hidden');
-    document.getElementById('leaderboard-screen').classList.remove('hidden');
+        document.getElementById('end-screen').classList.add('hidden');
+        document.getElementById('leaderboard-screen').classList.remove('hidden');
 
-    // 未填寫 GAS 網址時的本地測試模式
-    if (GAS_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
-        document.getElementById('leaderboard-status').innerText = "（目前為測試模式，顯示範例數據）";
-        showMockLeaderboard(className, studentName, score, maxStreak);
-        return;
+        if (GAS_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+            document.getElementById('leaderboard-status').innerText = "（目前為測試模式，顯示範例數據）";
+            showMockLeaderboard(className, studentName, score, maxStreak);
+            return;
+        }
+
+        document.getElementById('leaderboard-status').innerText = "正在記錄成績，大腦又變聰明囉...";
+
+        fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+                className: className,
+                studentName: studentName,
+                score: score,
+                maxStreak: maxStreak
+            })
+        })
+        .then(() => loadLeaderboard())
+        .catch((err) => {
+            console.error("寫入錯誤:", err);
+            loadLeaderboard();
+        });
     }
 
-    document.getElementById('leaderboard-status').innerText = "正在記錄成績，大腦又變聰明囉...";
-
-    // 正確的跨網域發送寫法
-    fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 關鍵：避免 triggering CORS preflight 攔截
-        body: JSON.stringify({
-            className: className,
-            studentName: studentName,
-            score: score,
-            maxStreak: maxStreak
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        loadLeaderboard(); // 寫入成功後重新讀取龍虎榜
-    })
-    .catch(err => {
-        console.error("寫入失敗:", err);
-        // 若網絡稍有延遲，依然嘗試載入最新排行榜
-        loadLeaderboard();
-    });
-}
-
     function loadLeaderboard() {
-        document.getElementById('leaderboard-status').innerText = "正在讀取頭十名龍虎榜...";
+        document.getElementById('leaderboard-status').innerText = "正在更新最新龍虎榜...";
         fetch(GAS_URL)
             .then(res => res.json())
             .then(data => renderLeaderboard(data))
             .catch(() => {
-                document.getElementById('leaderboard-status').innerText = "讀取龍虎榜失敗。";
+                document.getElementById('leaderboard-status').innerText = "讀取龍虎榜失敗，請重新整理。";
             });
     }
 
@@ -576,21 +588,22 @@ function submitScore(e) {
             tr.innerHTML = `
                 <td>${index + 1}</td>
                 <td>${escapeHtml(item.className)}</td>
-                <td>${escapeHtml(item.name)}</td>
+                <td>${escapeHtml(item.studentName)}</td>
                 <td>${item.score}</td>
-                <td>${item.streak}</td>
+                <td>${item.maxStreak}</td>
             `;
             tbody.appendChild(tr);
         });
 
         document.getElementById('leaderboard-table').classList.remove('hidden');
+        // 關鍵：載入完成並渲染後，才顯示「重新開始」按鈕
+        document.getElementById('restart-btn').classList.remove('hidden');
     }
 
     function showMockLeaderboard(cls, name, sc, stk) {
         renderLeaderboard([
-            { className: cls, name: name, score: sc, streak: stk },
-            { className: "1A", name: "陳小明", score: 30, streak: 6 },
-            { className: "1B", name: "張大文", score: 20, streak: 4 }
+            { className: cls, studentName: name, score: sc, maxStreak: stk },
+            { className: "1A", studentName: "李小明", score: 30, maxStreak: 6 }
         ]);
     }
 
