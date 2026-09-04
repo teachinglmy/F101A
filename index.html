@@ -153,22 +153,37 @@
             box-shadow: none;
         }
 
-        .feedback {
-            min-height: 55px;
-            margin: 10px 0;
-            font-size: 1.05rem;
-            font-weight: bold;
-            color: #D35400;
-            line-height: 1.4;
-            background-color: #FDEDEC;
-            border-radius: 10px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+       .feedback {
+    min-height: 55px;
+    margin: 10px 0;
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #D35400;
+    line-height: 1.6; /* 加大行高，讓閱讀更舒適 */
+    background-color: #FDEDEC;
+    border-radius: 12px;
+    padding: 12px 15px;
+    text-align: center; /* 讓文字與圖示置中 */
+    display: block;    /* 關鍵修復：改回區塊排版，讓文字與 <b> 標籤自然流動 */
+    box-sizing: border-box;
+}
 
-        .feedback.empty { background-color: transparent; }
+.feedback.empty {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* 提示內的獨立段落排版，確保引導字眼結構清晰 */
+.feedback-title {
+    color: #E67E22;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.feedback-hint {
+    color: #5D4037;
+    font-weight: normal;
+    font-size: 0.98rem;
 
         table {
             width: 100%;
@@ -502,27 +517,34 @@
         }
     }
 
-    function explainType1Error(userAns, correctAns) {
-        if (isNaN(userAns)) return "再嘗試，加油！請按數字鍵盤輸入答案喔！";
-        let hint = "再嘗試，加油！";
-        if (correctAns > 10) {
-            hint += `<br>💡 <b>思考小幫手：</b>滿格十格框是 <b>10</b>，另一個框有 <b>${correctAns - 10}</b> 個，合起來是 <b>${correctAns}</b>！`;
-        } else if (correctAns > 5) {
-            hint += `<br>💡 <b>思考小幫手：</b>第一排有 <b>5</b> 個，接著往後數數看！`;
-        } else {
-            hint += `<br>💡 <b>思考小幫手：</b>大腦正在思考變聰明！用手指一個一個數數看！`;
-        }
-        return hint;
-    }
+function explainType1Error(userAns, correctAns) {
+    if (isNaN(userAns)) return "<div class='feedback-title'>💪 沒關係，我們再試一次！</div><div class='feedback-hint'>請按數字鍵盤輸入答案喔！</div>";
+    
+    let title = "<div class='feedback-title'>🌱 大腦正在變聰明！做錯是學習的好機會！</div>";
+    let hint = "";
 
-    function explainType2Error(current, target) {
-        let hint = `再嘗試，加油！你現在放了 <b>${current}</b> 個圓點。<br>`;
-        if (current < target) {
-            hint += `💡 還少 <b>${target - current}</b> 個圓點，手指再劃過幾格補齊吧！`;
-        } else {
-            hint += `💡 多放了 <b>${current - target}</b> 個圓點，再劃過多餘的圓點就能取消喔！`;
-        }
-        return hint;
+    if (correctAns > 10) {
+        hint = `<div class='feedback-hint'>💡 <b>思考小幫手：</b>滿格十格框是 <b>10</b>，另一個框有 <b>${correctAns - 10}</b> 個，合起來就是 <b>${correctAns}</b> 喔！</div>`;
+    } else if (correctAns > 5) {
+        hint = `<div class='feedback-hint'>💡 <b>思考小幫手：</b>第一排滿格是 <b>5</b>，接著往後數數看：6、7...</div>`;
+    } else {
+        hint = `<div class='feedback-hint'>💡 <b>思考小幫手：</b>伸出小手指，跟著十格框一個一個數數看！</div>`;
+    }
+    
+    return title + hint;
+}
+
+function explainType2Error(current, target) {
+    let title = "<div class='feedback-title'>🌟 很有嘗試的精神！我們離正確答案越來越近了！</div>";
+    let hint = "";
+
+    if (current < target) {
+        hint = `<div class='feedback-hint'>你現在放了 <b>${current}</b> 個圓點，還少 <b>${target - current}</b> 個，再滑過幾格補齊吧！</div>`;
+    } else {
+        hint = `<div class='feedback-hint'>你現在放了 <b>${current}</b> 個圓點，多放了 <b>${current - target}</b> 個，再劃過多餘的圓點就能拿掉囉！</div>`;
+    }
+    return title + hint;
+}
     }
 
     function endGame() {
